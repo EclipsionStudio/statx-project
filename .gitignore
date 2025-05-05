@@ -1,0 +1,5 @@
+.lh
+.vscode
+venv
+.env
+cloc-2.04.exe
