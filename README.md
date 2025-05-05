@@ -1,2 +1,0 @@
-# statx-project
-statx bot
