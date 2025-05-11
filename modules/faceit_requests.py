@@ -1,154 +1,184 @@
 import requests
 import re
-import json
 from decouple import config
+from modules.global_init import logger
+
+API_KEY = config("FACEIT_API_SERVER")
+DP_KEY = config("DEEPSEEK_API")
+
+MODEL = config("MODEL")
+
+HEADERS_API = {"Authorization": f"Bearer {API_KEY}"}
+HEADERS_DP = {"Authorization": f"Bearer {DP_KEY}"}
+
+API_PREF = "https://open.faceit.com/data/v4"
+DP_PREF = "https://openrouter.ai/api/v1"
+
+REQ = (
+    "Choose which of the following expressions is behind the user query. "
+    "Query: {query}. Expressions: {exp}. "
+    "Return ONLY the expression itself as the answer."
+)
 
 
-class FaceitStats:
-    @staticmethod
-    def get_player_id(nickname):
-        url = f"https://open.faceit.com/data/v4/players?nickname={nickname}"
-        headers = {"Authorization": f"Bearer {config("FACEIT_API_SERVER")}"}
-        response = requests.get(url=url, headers=headers)
-        if response.status_code == 200:
-            return response.json().get("player_id")
+def api_request(method, url, headers=None, data=None):
+    try:
+        response = requests.request(method, url, headers=headers, json=data)
+        response.raise_for_status()
+        return response.json()
+
+    except requests.exceptions.HTTPError as http_err:
+        logger.error(f"HTTP error occurred: {http_err}")
+    except requests.exceptions.RequestException as err:
+        logger.error(f"Error: {err}")
+    return None
+
+
+def get_player_id(nickname):
+    url = f"{API_PREF}/players?nickname={nickname}"
+    response = api_request("GET", url, headers=HEADERS_API)
+
+    return response.get("player_id") if response else None
+
+
+def get_player_stats(player_id):
+    url = f"{API_PREF}/players/{player_id}/stats/cs2"
+
+    return api_request("GET", url, headers=HEADERS_API)
+
+
+def find_best_match(query, expressions):
+    data = {
+        "model": MODEL,
+        "messages": [
+            {
+                "role": "user",
+                "content": REQ.format(query=query, exp=",".join(expressions)),
+            }
+        ],
+        "max_tokens": 10000,
+    }
+    response = requests.post(
+        f"{DP_PREF}/chat/completions", headers=HEADERS_DP, json=data
+    )
+    response.raise_for_status()
+
+    return response.json()["choices"][0]["message"]["content"]
+
+
+def rebuilding(changeable):
+    result = [{"": {}}]
+    keys = list(changeable.items())
+
+    for idx, (key, value) in enumerate(keys):
+        if idx == 0:
+            result[0][""][key] = value
+        elif idx == 1:
+            result[0][""][key] = value
+        elif idx == 2 and isinstance(value, dict):
+            result[0][""].update(value)
         else:
-            print(f"Error when getting player ID: {response.json()}")
-            return None
+            if not isinstance(value, list):
+                continue
+            for map_item in value:
+                if (
+                    not isinstance(map_item, dict)
+                    or "label" not in map_item
+                    or "stats" not in map_item
+                ):
+                    continue
+                label = map_item["label"]
+                stats = map_item["stats"]
+                result.append({label: {}})
+                result[-1][label].update(stats)
 
-    @staticmethod
-    def get_player_stats(player_id):
-        url = f"https://open.faceit.com/data/v4/players/{player_id}/stats/cs2"
-        headers = {"Authorization": f"Bearer {config("FACEIT_API_SERVER")}"}
-        response = requests.get(url, headers=headers)
-        if response.status_code == 200:
-            return response.json()
+    return result
+
+
+def make_expressions(changeable):
+    return [
+        " ".join(item.keys()).strip()
+        for item in changeable
+        if item and any(item.values())
+    ]
+
+
+def extract_stat(best_match, rebuilded_stats):
+    if best_match.split()[0] in [
+        "Dust2",
+        "Vertigo",
+        "Train",
+        "Mirage",
+        "Overpass",
+        "Ancient",
+        "Anubis",
+        "Nuke",
+    ]:
+        for item in rebuilded_stats:
+            if next(iter(item)) == best_match.split()[0]:
+                return item[best_match.split()[0]][" ".join(best_match.split()[1:])]
+    return rebuilded_stats[0][""][best_match]
+
+
+def main(request, mode, comparison_mode):
+    if mode == "1":
+        query = request
+        if query.count('"') % 2 == 1 or query.count('"') == 0 or query.count('"') > 2:
+            return "Error: Enter the player's nickname correctly"
+
+        nickname_match = re.search(r'"(.*?)"', query)
+        if not nickname_match:
+            return "Error: Invalid format for player nickname."
+
+        nickname = nickname_match.group(1)
+        player_id = get_player_id(nickname)
+        if player_id:
+            stats = get_player_stats(player_id)
+            if stats:
+                rebuilded_stats = rebuilding(stats)
+                expressions = make_expressions(rebuilded_stats)
+                query = query.replace(f'"{nickname}"', "").strip()
+                best_match = find_best_match(query, expressions)
+                result = extract_stat(best_match, rebuilded_stats)
+                return f"The {best_match.lower()} for {nickname} is {result}"
+            else:
+                return "Error: Failed to get player's statistics!"
         else:
-            print(f"Error when retrieving statistics: {response.json()}")
-            return None
+            return "Error: This nickname does not exist!"
 
-    @staticmethod
-    def find_best_match(query, expressions):
-        response = requests.post(
-            url="https://openrouter.ai/api/v1/chat/completions",
-            headers={"Authorization": f"Bearer {config("DEEPSEEK_API")}"},
-            data=json.dumps(
-                {
-                    "model": config("MODEL"),
-                    "messages": [
-                        {
-                            "role": "user",
-                            "content": f"Choose which of the following expressions is behind the user query. Query: {query}. Expressions: {', '.join(expressions)}. Return ONLY the expression itself as the answer.",
-                        }
-                    ],
-                    "max_tokens": 10000,
-                }
-            ),
-        )
-        result = response.json()
-        return result["choices"][0]["message"]["content"]
+    elif mode == "2":
+        query = request
+        if comparison_mode not in ["max", "min"]:
+            return "Error: Enter the correct query (max/min)"
 
-    @staticmethod
-    def rebuilding(changeable):
-        result = [{"": {}}]
-        line = -1
-        for key, value in changeable.items():
-            line += 1
-            if line in [0, 1]:
-                result[0][""][key] = value
-            elif line == 2:
-                for lifetime_key, lifetime_value in value.items():
-                    result[0][""][lifetime_key] = lifetime_value
-            else:
-                for i, map in enumerate(value):
-                    result.append({map["label"]: {}})
-                    for stats_key, stats_value in map["stats"].items():
-                        result[i + 1][map["label"]][stats_key] = stats_value
-        return result
-    
-    @staticmethod
-    def make_expressions(changeable):
-        result = []
-        for map in changeable:
-            map_name = "" if next(iter(map)) == "" else next(iter(map))
-            for key in map[map_name].keys():
-                result.append(f"{map_name} {key}".strip())
-        return result
-
-    def main(self):
-        mode = input("Choose mode (1 - single player, 2 - compare player) -> ")
-        if mode == "1":
-            query = input("Enter your request -> ")
-            if (
-                query.count('"') % 2 == 1
-                or query.count('"') == 0
-                or query.count('"') > 2
-            ):
-                print("Enter the player's nickname correctly")
-                return
-            nickname = re.search(r'"(.*?)"', query).group(1)
-            player_id = self.get_player_id(nickname)
-            if player_id:
-                stats = self.get_player_stats(player_id)
-                if stats:
-                    rebuilded_stats = self.rebuilding(stats)
-                    expressions = self.make_expressions(rebuilded_stats)
-                    query = query.replace(f'"{nickname}"', "").strip()
-                    best_match = self.find_best_match(query, expressions)
-                    result = self.extract_stat(best_match, rebuilded_stats)
-                    print(f"The {best_match.lower()} for {nickname} is {result}")
-                else:
-                    print("Error! Failed to get player's statistics!")
-            else:
-                print("Error! This nickname does not exist!")
-        elif mode == "2":
-            self.compare_players()
-
-    @staticmethod
-    def extract_stat(best_match, rebuilded_stats):
-        if best_match.split()[0] in [
-            "Dust2",
-            "Vertigo",
-            "Train",
-            "Mirage",
-            "Overpass",
-            "Ancient",
-            "Anubis",
-            "Nuke",
-        ]:
-            for item in rebuilded_stats:
-                if next(iter(item)) == best_match.split()[0]:
-                    return item[best_match.split()[0]][" ".join(best_match.split()[1:])]
-        return rebuilded_stats[0][""][best_match]
-
-    def compare_players(self):
-        query = input("Enter your request -> ")
-        choice = input("You want to get the largest or smallest value (max/min) -> ")
-        if choice not in ["max", "min"]:
-            print("Enter the correct query (max/min)")
-            return
         if query.count('"') % 2 == 1 or query.count('"') == 0:
-            print("Enter the players' nicknames correctly")
-            return
+            return "Error: Enter the players' nicknames correctly"
+
         players = {}
         for i in range(int(query.count('"') / 2)):
-            nickname = re.search(r'"(.*?)"', query).group(1)
-            player_id = self.get_player_id(nickname)
+            nickname_match = re.search(r'"(.*?)"', query)
+            if not nickname_match:
+                continue
+
+            nickname = nickname_match.group(1)
+            player_id = get_player_id(nickname)
             if player_id:
-                stats = self.get_player_stats(player_id)
+                stats = get_player_stats(player_id)
                 if stats:
-                    if i == 0:
-                        rebuilded_stats = self.rebuilding(stats)
-                        expressions = self.make_expressions(rebuilded_stats)
-                        best_match = self.find_best_match(query, expressions)
-                    players[nickname] = self.extract_stat(best_match, rebuilded_stats)
-        sorted_players = sorted(
-            players.items(), key=lambda item: item[1], reverse=(choice == "max")
-        )
-        print(
-            f"{choice.capitalize()} number of {best_match.lower()} has {sorted_players[0][0]} ({sorted_players[0][1]})"
-        )
+                    rebuilded_stats = rebuilding(stats)
+                    expressions = make_expressions(rebuilded_stats)
+                    best_match = find_best_match(query, expressions)
+                    players[nickname] = extract_stat(best_match, rebuilded_stats)
+                    query = query.replace(f'"{nickname}"', "").strip()
+
+        if players:
+            sorted_players = sorted(players.items(), key=lambda item: item[1], reverse=(comparison_mode == "max"))
+            return f"{comparison_mode.capitalize()} number of {best_match.lower()} has {sorted_players[0][0]} ({sorted_players[0][1]})"
+        else:
+            return "Error: No valid players found or their statistics were not fetched correctly."
+    else:
+        return "Error: Invalid mode! Choose 1 or 2"
 
 
 if __name__ == "__main__":
-    FaceitStats().main()
+    main()
