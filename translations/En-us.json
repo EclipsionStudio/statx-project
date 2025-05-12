@@ -6,7 +6,7 @@
         ],
         "inline": {
             "1": {"/help": "command:help", "/login": "command:login"},
-            "2": {"static": "func:statistics"}
+            "2": {"/info": "command:stats"}
         }
     },
     "login-start-already": {
@@ -62,7 +62,7 @@
             "More commands can be found with /help"
         ],
         "inline": {
-            "1": {"/lastmatch": "command:lastmatch", "/help": "command:help"}
+            "1": {"/info": "command:stats", "/help": "command:help"}
         }
     },
     "help": {
@@ -87,11 +87,27 @@
     "change-lang": {
         "msg": ["Select your preferred language!\n", "Currently set to \n<code>🇺🇸 English</code>"],
         "inline": {
-            "1": {"🇺🇸 English": "lang:us", "🇷🇺 Русский": "lang:ru"}
+            "1": {"🇺🇸 English": "lang:us", "🇷🇺 Coming Soon": ""}
         }
     },
     "change-to": {
         "msg": ["Language changed to English"]
     },
+    "info": {
+        "msg": ["Ok, we have accepted your request, in a few seconds we will send you the requested statistics"]
+    },
+    "info-nick-error": {
+        "msg": ["Psss. We noticed that you didn't specify a nickname. Try /login or enter the nickname in double quotes"]
+    },
+    "info-many-error": {
+        "msg": ["this is the mode of displaying statistics for one player. Psss. if you want to compare players, write /compare"]
+    },
+    "fetch-error": {
+        "msg": ["OOps we had an error retrieving data, please try again later"]
+    },
+    "compare-niks-error": {
+        "msg": ["this mode allows you to compare players! enter at least 1 nickname, but no more than 3"]
+    },
+    "compare-states": ["Fetching...", "Analysing...", "Searching...","Structuring..."],
     "cancel": ["/back", "/close", "/cancel"]
 }

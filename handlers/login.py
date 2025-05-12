@@ -2,7 +2,7 @@ from modules import get_data, next_step, ask, auto_delete
 from modules.global_init import bot
 from modules import global_init
 from modules.database.main import Database as db
-from modules.faceit_requests import FaceitStats
+from modules import faceit_requests as FaceitStats
 
 # text, markup = get_data(message, "login-1-alredy")
 
