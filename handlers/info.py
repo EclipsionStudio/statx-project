@@ -1,4 +1,5 @@
 from modules import auto_delete, get_data
+from modules.create_diagram import info_diag
 from modules.database.main import Database as db
 from modules.faceit_requests import FaceitStats as fs
 from modules.global_init import bot
@@ -53,7 +54,7 @@ def info_handler(message):
         bot.edit_message_text("Searching Stats\n[🟩🟩🟩]", message.chat.id, status.message_id)
         result = fs().extract_stat(rebuilded_stats, needed_keys)
         
-        print(result)
+        # print(result)
 
         if not nik:
             nik = "Anonim"
@@ -84,10 +85,14 @@ def info_handler(message):
             visual1 = "Stats not Found )\n"
 
         print(visual1, visual2, )
-
+        bot.delete_message(message.chat.id, status.message_id)
         visual = f"STATS FOR {nik}\n" + visual1 + visual2 + "\n<may be inaccurate>\n@stat_x_bot"
-
-        bot.edit_message_text(visual, message.chat.id, status.message_id)
+        try:
+            diagr = info_diag({"player": nik, "stats": result})
+            bot.send_photo(message.chat.id, photo=diagr, caption=visual)
+        except Exception as e:
+            print(e)
+            bot.send_message(message.chat.id, text=visual)
 
         
     else:

@@ -108,6 +108,12 @@
     "compare-niks-error": {
         "msg": ["this mode allows you to compare players! enter at least 1 nickname, but no more than 3"]
     },
+    "compare-error-count": {
+        "msg": ["enter more then one nikname"]
+    },
+    "compare-processing": {
+        "msg": ["We started analyse"]
+    },
     "compare-states": ["Fetching...", "Analysing...", "Searching...","Structuring..."],
     "cancel": ["/back", "/close", "/cancel"]
 }

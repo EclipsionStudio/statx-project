@@ -1,5 +1,4 @@
 import time
-# from turtle import reset
 import requests
 import re
 import json

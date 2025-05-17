@@ -29,8 +29,8 @@ def confirm_edit(message, bmsg):
         return
     
     text, markup = get_data(message, "login-start")
-    bot.send_message(message.chat.id, text, reply_markup=markup, parse_mode="HTML")
-    bot.register_next_step_handler(message, username_checkout)
+    bmsg = bot.send_message(message.chat.id, text, reply_markup=markup, parse_mode="HTML")
+    bot.register_next_step_handler(message, username_checkout, bmsg)
 
 def username_checkout(message, bmsg):
     auto_delete(message)
@@ -46,7 +46,7 @@ def username_checkout(message, bmsg):
     if username.startswith("https://www.faceit.com/"):
         username = username[24:].split("/")[-1]
         uid = FaceitStats().get_player_id(username)
-        print(uid)
+        
     elif not username.startswith("https://www.faceit.com/"):
         uid = FaceitStats().get_player_id(username)
     else:
