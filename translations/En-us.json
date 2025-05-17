@@ -73,7 +73,6 @@
             "\n>>> STATS COMMANDS\n",
             "/info [your request] - show stats of player that includes in request; if request is none, show all stats\n",
             "/compare [your request] - compare more than one player and show result\n",
-            "/bestmatch [your request] - show best match of player\n",
             "This is a preliminary list!"
         ],
         "inline": {
@@ -114,6 +113,5 @@
     "compare-processing": {
         "msg": ["We started analyse"]
     },
-    "compare-states": ["Fetching...", "Analysing...", "Searching...","Structuring..."],
     "cancel": ["/back", "/close", "/cancel"]
 }
