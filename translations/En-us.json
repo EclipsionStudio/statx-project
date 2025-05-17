@@ -1,0 +1,117 @@
+{
+    "start": {
+        "msg": [
+            "Hello @{user}, I'm a bot that can help you with collecting stats \n",
+            "from Faceit servers. For help type /help, to assign a username type /login"
+        ],
+        "inline": {
+            "1": {"/help": "command:help", "/login": "command:login"},
+            "2": {"/info": "command:stats"}
+        }
+    },
+    "login-start-already": {
+        "msg": "You are already logged in. Are you sure you want to change your username?",
+        "key": {
+            "1": ["Yes", "No"]
+        }
+    },
+    "login-start": {
+        "msg": [
+            "Please enter your Faceit username as a link \n\n",
+            "<code>https://www.faceit.com/**/players/****/</code> \nor\n",
+            "<code>{username}</code>"
+        ],
+        "key": {
+            "1": ["/cancel"]
+        }
+    },
+    "login-checkout": {
+        "msg": ["We are checking your Faceit username..."]
+    },
+    "login-link-error": {
+        "msg": [
+            "This is not a valid Faceit profile link!\n",
+            "Please try again using /login"
+        ],
+        "key": {
+            "1": ["/login"]
+        }
+    },
+    "login-profile-error": {
+        "msg": [
+            "Something went wrong. The profile name is incorrect.\n",
+            "Please try again using /login"
+        ],
+        "key": {
+            "1": ["/login"]
+        }
+    },
+    "login-sure": {
+        "msg": ["Ok, your username is <code>{user}</code>. Is it correct?"],
+        "key": {
+            "1": ["Yes", "No"],
+            "2": ["/cancel"]
+        }
+    },
+    "login-success": {
+        "msg": [
+            "Perfect, your data ↓\n",
+            "<pre>▶ Faceit ID: <code>{fid}</code>\n",
+            "▶ Username: <code>{fn}</code></pre>\n",
+            "Try to get statistics for your last match using /lastmatch\n",
+            "More commands can be found with /help"
+        ],
+        "inline": {
+            "1": {"/info": "command:stats", "/help": "command:help"}
+        }
+    },
+    "help": {
+        "msg": [
+            "Here is a list of commands that I can handle:\n\n",
+            "/login - Assign a username\n",
+            "/start - show start panel\n",
+            "\n>>> STATS COMMANDS\n",
+            "/info [your request] - show stats of player that includes in request; if request is none, show all stats\n",
+            "/compare [your request] - compare more than one player and show result\n",
+            "This is a preliminary list!"
+        ],
+        "inline": {
+            "1": {"Back to menu": "command:start"}
+        }
+    },
+    "answers": {
+        "yes": "yes",
+        "no": "no"
+    },
+    "change-lang": {
+        "msg": ["Select your preferred language!\n", "Currently set to \n<code>🇺🇸 English</code>"],
+        "inline": {
+            "1": {"🇺🇸 English": "lang:us", "🇷🇺 Coming Soon": ""}
+        }
+    },
+    "change-to": {
+        "msg": ["Language changed to English"]
+    },
+    "info": {
+        "msg": ["Ok, we have accepted your request!"]
+    },
+    "info-nick-error": {
+        "msg": ["Psss. We noticed that you didn't specify a nickname. Try /login or enter the nickname in double quotes"]
+    },
+    "info-many-error": {
+        "msg": ["this is the mode of displaying statistics for one player. Psss. if you want to compare players, write /compare"]
+    },
+    "fetch-error": {
+        "msg": ["OOps we had an error retrieving data, please try again later"]
+    },
+    "compare-niks-error": {
+        "msg": ["this mode allows you to compare players! enter at least 1 nickname, but no more than 3"]
+    },
+    "compare-error-count": {
+        "msg": ["enter more then one nikname"]
+    },
+    "compare-processing": {
+        "msg": ["We started analyse"]
+    },
+    "cancel": ["/back", "/close", "/cancel"]
+}
