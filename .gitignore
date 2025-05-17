@@ -3,6 +3,6 @@
 venv
 .env
 cloc-2.04.exe
-./modules/__pycache__
-./translations/__pycache__
-./logs/app.log
+modules/__pycache__
+translations/__pycache__
+logs/app.log

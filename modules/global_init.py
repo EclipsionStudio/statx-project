@@ -10,7 +10,7 @@ import os
 bot = TeleBot(str(config('BOT_TOKEN')))
 
 Base = declarative_base()
-engine = create_engine('sqlite:///data/database.db3', echo=True)
+engine = create_engine('sqlite:///data/database.db3', echo=False)
 Session = sessionmaker(bind=engine)
 
 

@@ -94,7 +94,7 @@
         "msg": ["Language changed to English"]
     },
     "info": {
-        "msg": ["Ok, we have accepted your request, in a few seconds we will send you the requested statistics"]
+        "msg": ["Ok, we have accepted your request!"]
     },
     "info-nick-error": {
         "msg": ["Psss. We noticed that you didn't specify a nickname. Try /login or enter the nickname in double quotes"]

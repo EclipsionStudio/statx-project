@@ -2,7 +2,7 @@ from modules import get_data, next_step, ask, auto_delete
 from modules.global_init import bot
 from modules import global_init
 from modules.database.main import Database as db
-from modules import faceit_requests as FaceitStats
+from modules.faceit_requests import FaceitStats
 
 # text, markup = get_data(message, "login-1-alredy")
 
@@ -45,9 +45,10 @@ def username_checkout(message, bmsg):
 
     if username.startswith("https://www.faceit.com/"):
         username = username[24:].split("/")[-1]
-        uid = FaceitStats.get_player_id(username)
+        uid = FaceitStats().get_player_id(username)
+        print(uid)
     elif not username.startswith("https://www.faceit.com/"):
-        uid = FaceitStats.get_player_id(username)
+        uid = FaceitStats().get_player_id(username)
     else:
         text, markup = get_data(message, "login-link-error")
         m_error = bot.send_message(message.chat.id, text=text, reply_markup=markup, parse_mode="HTML")

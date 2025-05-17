@@ -20,6 +20,11 @@ def help_init(message):
     help_handler(message)
 
 
+@bot.message_handler(commands=["info"])
+def info_init(message):
+    info_handler(message)
+
+
 @bot.message_handler(commands=["login"])
 def login_init(message):
     login_handler(message)
@@ -28,13 +33,3 @@ def login_init(message):
 @bot.message_handler(commands=["compare"])
 def compare_init(message):
     compare_handler(message)
-
-
-@bot.message_handler(commands=["info"])
-def info_init(message):
-    info_handler(message)
-
-
-# @bot.message_handler(func=lambda m: not m.text.startswith('/'))
-# def llm_analyse(message):
-#     llm_analyse_handler(message)

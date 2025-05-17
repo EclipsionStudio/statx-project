@@ -46,7 +46,7 @@ class Database:
         return user.faceit_id if get_faceit_id else bool(user.faceit_id)
 
     @staticmethod
-    def get_user(session, message):
+    def get_user(session, message) -> User:
         return session.query(User).filter_by(id=message.chat.id).first()
 
     @classmethod

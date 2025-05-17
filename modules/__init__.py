@@ -4,6 +4,7 @@ from translations import translations
 from modules.global_init import bot
 from modules.database.main import Database as db
 import time
+from modules.global_init import logger
 
 data = "main loaded"
 
@@ -73,4 +74,6 @@ def auto_delete(message, delay=0):
 
 
 def bot_info():
-    return f"Bot started\nusername: {bot.get_me().username}\nbot id: {bot.get_me().id}\nbot name: {bot.get_me().full_name}"
+    logger.info(f"BOT '{bot.get_me().full_name}' started now!")
+    logger.info(f"username: @{bot.get_me().username}")
+    logger.info(f"bot id: {bot.get_me().id}")
